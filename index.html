@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIは、正直だ。— 40代50代のAI顔分析のススメ</title>
+<meta name="description" content="占いじゃない。データで自分の顔を知る、令和の自己投資術。プロ用語を使った本格AI顔診断プロンプトを公開。">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+  :root {
+    --cream: #F8F4EE;
+    --ivory: #F2EDE4;
+    --warm-gray: #8C8278;
+    --dark: #2C2420;
+    --gold: #B8965A;
+    --gold-light: #D4AF72;
+    --bronze: #9B7540;
+    --text-main: #3A302A;
+    --text-sub: #6B5F57;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--text-main);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 80px 24px 60px;
+    background: linear-gradient(160deg, #2C2420 0%, #3D302A 50%, #4A3830 100%);
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(184,150,90,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(184,150,90,0.08) 0%, transparent 50%);
+  }
+
+  .hero-eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(13px, 2.5vw, 16px);
+    color: var(--gold-light);
+    letter-spacing: 0.25em;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.2s;
+  }
+
+  .hero-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(28px, 6vw, 56px);
+    font-weight: 300;
+    color: #F8F4EE;
+    line-height: 1.45;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.4s;
+  }
+
+  .hero-title em {
+    font-style: normal;
+    color: var(--gold-light);
+  }
+
+  .hero-subtitle {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(14px, 2.5vw, 18px);
+    font-weight: 300;
+    color: rgba(248,244,238,0.6);
+    letter-spacing: 0.12em;
+    margin-top: 20px;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.6s;
+  }
+
+  .gold-line {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.5s;
+  }
+
+  .hero-lead {
+    max-width: 560px;
+    font-size: clamp(14px, 2vw, 16px);
+    color: rgba(248,244,238,0.75);
+    line-height: 2;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.8s;
+    margin-bottom: 48px;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 18px 52px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--bronze) 100%);
+    color: #fff;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 1s;
+    box-shadow: 0 4px 24px rgba(184,150,90,0.35);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(184,150,90,0.5);
+  }
+
+  section {
+    padding: clamp(60px, 8vw, 100px) clamp(24px, 6vw, 80px);
+  }
+
+  .section-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--gold);
+    letter-spacing: 0.3em;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: 0.05em;
+    color: var(--dark);
+    margin-bottom: 20px;
+  }
+
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+    margin: 24px 0;
+  }
+
+  .why { background: var(--ivory); }
+
+  .why-inner, .prompt-inner, .analysis-inner, .tips-inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .why-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
+    margin-top: 48px;
+  }
+
+  @media (max-width: 640px) {
+    .why-grid { grid-template-columns: 1fr; gap: 24px; }
+  }
+
+  .why-card {
+    background: white;
+    padding: 32px 24px;
+    border-top: 2px solid var(--gold);
+    box-shadow: 0 2px 20px rgba(60,40,30,0.06);
+    transition: transform 0.3s ease;
+  }
+
+  .why-card:hover { transform: translateY(-4px); }
+
+  .why-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    color: var(--gold-light);
+    opacity: 0.4;
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .why-card h3 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+
+  .why-card p { font-size: 13px; color: var(--text-sub); line-height: 1.9; }
+
+  .prompt-section {
+    background: var(--dark);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .prompt-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(184,150,90,0.08) 0%, transparent 70%);
+  }
+
+  .prompt-section .section-title { color: var(--cream); }
+  .prompt-section .section-label { color: var(--gold-light); }
+  .prompt-section p { color: rgba(248,244,238,0.7); font-size: 15px; line-height: 2; margin-bottom: 32px; }
+
+  .prompt-box {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(184,150,90,0.25);
+    border-left: 3px solid var(--gold);
+    padding: 32px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12.5px;
+    color: rgba(248,244,238,0.8);
+    line-height: 2.1;
+    white-space: pre-wrap;
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border: 1px solid var(--gold);
+    background: transparent;
+    color: var(--gold-light);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .copy-btn:hover { background: var(--gold); color: white; }
+
+  .analysis { background: white; }
+
+  .analysis-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 48px;
+  }
+
+  @media (max-width: 600px) { .analysis-grid { grid-template-columns: 1fr; } }
+
+  .analysis-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 24px;
+    background: var(--cream);
+    border-bottom: 1px solid rgba(184,150,90,0.2);
+  }
+
+  .analysis-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+
+  .analysis-item h3 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 6px;
+  }
+
+  .analysis-item p { font-size: 12.5px; color: var(--text-sub); line-height: 1.9; }
+
+  .tips { background: var(--ivory); }
+
+  .tip-row {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+    padding: 40px 0;
+    border-bottom: 1px solid rgba(184,150,90,0.15);
+  }
+
+  .tip-row:last-child { border-bottom: none; }
+
+  .tip-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px;
+    font-weight: 300;
+    color: var(--gold);
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: 0.6;
+    min-width: 48px;
+  }
+
+  .tip-content h3 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  .tip-content p { font-size: 14px; color: var(--text-sub); line-height: 2; }
+
+  .closing {
+    background: linear-gradient(160deg, #2C2420 0%, #3D302A 100%);
+    text-align: center;
+    padding: 100px 24px;
+  }
+
+  .closing-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 1.7;
+    margin-bottom: 24px;
+    letter-spacing: 0.06em;
+  }
+
+  .closing-title strong { color: var(--gold-light); font-weight: 600; }
+
+  .closing-body {
+    color: rgba(248,244,238,0.65);
+    font-size: 15px;
+    line-height: 2;
+    max-width: 520px;
+    margin: 0 auto 48px;
+  }
+
+  .line-cta {
+    background: var(--ivory);
+    padding: clamp(60px, 8vw, 80px) 24px;
+    text-align: center;
+  }
+
+  .line-box {
+    max-width: 560px;
+    margin: 0 auto;
+    background: white;
+    border: 1px solid rgba(184,150,90,0.2);
+    padding: 48px 40px;
+    box-shadow: 0 4px 40px rgba(60,40,30,0.08);
+  }
+
+  .line-box .section-label { display: block; text-align: center; margin-bottom: 16px; }
+
+  .line-box h2 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: clamp(18px, 3.5vw, 24px);
+    font-weight: 400;
+    color: var(--dark);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .line-box p { font-size: 13.5px; color: var(--text-sub); line-height: 2; margin-bottom: 32px; }
+
+  .btn-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 48px;
+    background: #06C755;
+    color: white;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(6,199,85,0.3);
+    text-decoration: none;
+  }
+
+  .btn-line:hover { background: #05a849; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(6,199,85,0.4); }
+
+  footer {
+    background: var(--dark);
+    padding: 32px 24px;
+    text-align: center;
+  }
+
+  footer p { font-size: 12px; color: rgba(248,244,238,0.3); letter-spacing: 0.1em; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .fade-in.visible { opacity: 1; transform: none; }
+
+  .hero-deco {
+    position: absolute;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(80px, 18vw, 200px);
+    color: rgba(184,150,90,0.04);
+    font-weight: 300;
+    pointer-events: none;
+    user-select: none;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-deco">Mirror</div>
+  <span class="hero-eyebrow">AI Face Analysis for 40s & 50s</span>
+  <h1 class="hero-title"><em>AIは、正直だ。</em></h1>
+  <p class="hero-subtitle">データで自分の顔を知る、令和の自己投資術</p>
+  <div class="gold-line"></div>
+  <p class="hero-lead">
+    占いじゃない。スコアでもない。<br>
+    あなたの「今の顔の魅力」を最大化するための、<br>
+    プロ用語を使った本格AI顔診断の方法を公開します。
+  </p>
+  <a class="btn-primary" href="#prompt">プロンプトを見る</a>
+</section>
+
+<section class="why">
+  <div class="why-inner">
+    <span class="section-label fade-in">Why Now</span>
+    <h2 class="section-title fade-in">40〜50代こそ、<br>AI顔診断が効く理由</h2>
+    <div class="divider fade-in"></div>
+    <div class="why-grid">
+      <div class="why-card fade-in">
+        <div class="why-num">01</div>
+        <h3>「なんとなく老けた」の原因が言語化される</h3>
+        <p>パーツ別に観察・分析されるから、漠然とした不安が具体的な課題に変わります。</p>
+      </div>
+      <div class="why-card fade-in">
+        <div class="why-num">02</div>
+        <h3>写真写りが悪い理由が、角度・光・表情レベルで判明</h3>
+        <p>SNSのプロフィール写真を撮り直す前に知っておくべき情報が手に入ります。</p>
+      </div>
+      <div class="why-card fade-in">
+        <div class="why-num">03</div>
+        <h3>美容院・メイク変更前の"客観的な現状把握"</h3>
+        <p>自己投資の精度が上がる。お金をかける前に、方向性を正しく定められます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="prompt-section" id="prompt">
+  <div class="prompt-inner">
+    <span class="section-label fade-in">The Prompt</span>
+    <h2 class="section-title fade-in">コピペするだけ。<br>使うプロンプトはこれ</h2>
+    <div class="divider fade-in" style="background: rgba(184,150,90,0.5);"></div>
+    <p class="fade-in">GeminiまたはChatGPT（画像対応版）に自分の写真と一緒に貼るだけ。難しい操作はゼロです。</p>
+    <div class="prompt-box fade-in" id="promptText">あなたは、顔立ち分析・美容印象分析・写真写り改善に精通した
+プロのビジュアルアナリスト兼エディトリアルデザイナーです。
+
+以下の人物画像をもとに、
+「美男美女診断 × 印象分析 × 写真写り改善アドバイス」を統合した
+高級感のある日本語インフォグラフィック画像を1枚作成してください。
+
+【目的】
+・魅力的なパーツ
+・相対的に惜しいパーツ
+・美容的に整って見える点
+・与えやすい印象
+・改善するともっと良くなる点
+・写真写りを良くするコツ
+
+【分析ルール】
+・占いではなく、観察できる顔立ち・骨格感・配置・印象に基づいて分析
+・必ず「観察 → 美容的解釈 → 印象 → 改善提案」で整理する
+・強みと改善余地の両方を入れる
+・前向きで実用的な表現にする
+
+【必須の分析観点】
+・顔タイプ：塩顔 / 醤油顔 / ソース顔 / 韓国系 / 中性顔 / 童顔 / 大人顔
+・輪郭タイプ：卵型 / 面長 / 丸顔 / ベース型 / 逆三角形
+・三庭バランス、縦横比、左右バランス、Eライン
+・目・眉・鼻・口・顎・フェイスライン の各詳細
+
+【デザイン】
+美容雑誌 × 診断レポート風、9:16縦型、日本語</div>
+    <button class="copy-btn fade-in" onclick="copyPrompt()">
+      <span>📋</span> プロンプトをコピーする
+    </button>
+  </div>
+</section>
+
+<section class="analysis">
+  <div class="analysis-inner">
+    <span class="section-label fade-in">What You'll Learn</span>
+    <h2 class="section-title fade-in">診断でわかること、<br>プロ用語を解説</h2>
+    <div class="divider fade-in"></div>
+    <div class="analysis-grid fade-in">
+      <div class="analysis-item">
+        <div class="analysis-icon">📐</div>
+        <div>
+          <h3>三庭バランス</h3>
+          <p>顔を「額〜眉」「眉〜鼻」「鼻〜顎」の3分割で分析。バランスの崩れが"なんとなく老けて見える"原因になります。</p>
+        </div>
+      </div>
+      <div class="analysis-item">
+        <div class="analysis-icon">📏</div>
+        <div>
+          <h3>Eライン</h3>
+          <p>鼻先と顎先を結んだラインに唇が触れているか。横顔の整い感に直結するプロ指標です。</p>
+        </div>
+      </div>
+      <div class="analysis-item">
+        <div class="analysis-icon">🔲</div>
+        <div>
+          <h3>輪郭タイプ診断</h3>
+          <p>卵型・面長・丸顔・ベース型・逆三角形の5タイプ。似合うヘアや眉の形が変わります。</p>
+        </div>
+      </div>
+      <div class="analysis-item">
+        <div class="analysis-icon">👁️</div>
+        <div>
+          <h3>パーツ別詳細分析</h3>
+          <p>目・眉・鼻・口・顎・フェイスラインを個別評価。強みと改善余地が具体的にわかります。</p>
+        </div>
+      </div>
+      <div class="analysis-item">
+        <div class="analysis-icon">📸</div>
+        <div>
+          <h3>写真写り改善アドバイス</h3>
+          <p>盛れる角度、光の当て方、避けるべき写り方まで。SNSプロフィール更新前に必見です。</p>
+        </div>
+      </div>
+      <div class="analysis-item">
+        <div class="analysis-icon">✨</div>
+        <div>
+          <h3>総合印象・顔タイプ</h3>
+          <p>塩顔・醤油顔・韓国系など7タイプで系統分類。自分の"顔の方向性"が言語化されます。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tips">
+  <div class="tips-inner">
+    <span class="section-label fade-in">Tips</span>
+    <h2 class="section-title fade-in">40〜50代が使うときの<br>コツ 3選</h2>
+    <div class="divider fade-in"></div>
+    <div class="tip-row fade-in">
+      <div class="tip-num">1</div>
+      <div class="tip-content">
+        <h3>「自然光・正面・ノーフィルター」で撮る</h3>
+        <p>加工した写真を使うと、AIが現実じゃないものを分析してしまいます。朝の素顔くらいの写真で試してください。リアルな現状把握こそが、改善の第一歩です。</p>
+      </div>
+    </div>
+    <div class="tip-row fade-in">
+      <div class="tip-num">2</div>
+      <div class="tip-content">
+        <h3>「惜しい点」は"情報"として受け取る</h3>
+        <p>AIに感情はありません。ダメ出しではなく、カーナビが「次の交差点を右です」と言うのと同じ感覚で受け取るのがコツ。落ち込まずに活用することが大切です。</p>
+      </div>
+    </div>
+    <div class="tip-row fade-in">
+      <div class="tip-num">3</div>
+      <div class="tip-content">
+        <h3>うまくいかないときは"詰まってること"をそのまま聞く</h3>
+        <p>「なぜうまくいかないのか」をAIに投げるだけで解決することがほとんど。聞き方を変えるだけで道が開ける、これが令和のAI活用術です。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <h2 class="closing-title fade-in">
+    「若く見せたい」ではなく、<br>
+    <strong>「今の顔の魅力を最大化する」</strong>
+    <br>という視点の転換。
+  </h2>
+  <p class="closing-body fade-in">
+    40代・50代がAI顔診断をやると、20代とは違う収穫があります。<br>
+    AIは正直です。そしてちゃんと、あなたの強みも教えてくれます。
+  </p>
+  <a class="btn-primary" href="#prompt" style="opacity:1;animation:none;">プロンプトを試してみる</a>
+</section>
+
+<section class="line-cta">
+  <div class="line-box fade-in">
+    <span class="section-label">Special Gift</span>
+    <h2>50代からでも、<br>AIで月20万円プラスの秘訣</h2>
+    <p>
+      「何から始めたらいいかわからない」と足踏みしていませんか？<br>
+      難しい知識は不要。家事や仕事の合間に、あなたの経験を価値に変える方法。<br>
+      実際に扶養を卒業し経済的に自立できた秘訣を、公式LINEで無料プレゼント中です。
+    </p>
+    <a class="btn-line" href="https://sub.aione.co.jp" target="_blank">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.630 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.630 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+      公式LINEで受け取る（無料）
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 きの子 — AI活用術を発信中</p>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  function copyPrompt() {
+    const text = document.getElementById('promptText').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.innerHTML = '<span>✅</span> コピーしました！';
+      setTimeout(() => { btn.innerHTML = '<span>📋</span> プロンプトをコピーする'; }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
